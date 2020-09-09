@@ -9,6 +9,7 @@
 #include "psapi.h"
 #include <math.h>
 #include "IndexLength.h"
+#include "RefCompression.h"
 
 using namespace std;
 using namespace chrono;
@@ -19,6 +20,7 @@ unordered_map<string, vector<int>> fingerPrints;
 unordered_map<char, int> singleChar;
 int limit = 5;
 string relativeString;
+
 int relativeSize;
 int countSingleChar = 0;
 int memoryVar = 0;
@@ -192,9 +194,9 @@ vector<IndexLength> compress(string& toCompress) {
 }
 
 int findLocation(vector<IndexLength>& compressedVector, int& charIndex) {
-    int first = 0, last = compressedVector.size(), mid;
+    int first = 0, last, mid;
+    last = (charIndex <= compressedVector.size() ? charIndex : compressedVector.size()-1);
     mid = last / 2;
-    int count = 0;
     IndexLength ilTemp;
     while (true) {
         ilTemp = compressedVector[mid];
@@ -208,10 +210,6 @@ int findLocation(vector<IndexLength>& compressedVector, int& charIndex) {
             first = mid;
         }
         mid = (first + last) / 2;
-        count++;
-        if (count > 1000) {
-            break;
-        }
     }
     return mid;
 }
@@ -307,6 +305,37 @@ void processSingleCharRequestFromUser(int& numberOfStrings, int* sizes, vector<I
     }
 }
 
+
+void processSingleCharRequestFromUserReferenceString(vector<Node>& refCompressed, int& size) {
+
+    char response;
+    int charIndex;
+
+    while (true) {
+        cout << " do you want to retrieve a character ? Y/N " << endl;
+        cin >> response;
+        if (toupper(response) != 'Y')
+            break;
+        cout << "enter index within the string " << endl;
+        cin >> charIndex;
+        if (charIndex < 0 || charIndex > size-1) {
+            cout << "the string is not that long " << endl;
+            continue;
+        }
+        //measuring time start
+        auto start = high_resolution_clock::now();
+
+        //this function finds the character from the compressed datastructure
+        char charFound = findCharIndexRefString(refCompressed, charIndex);
+
+        //measuring time end
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+
+        cout << "your character is " << charFound << " it took " << duration.count() << " milliseconds " << endl;
+    }
+}
+
 void processSubstringFromUser(int& numberOfStrings, int* sizes, vector<IndexLength>* compressedVectors) {
 
     char response;
@@ -349,7 +378,7 @@ void processSubstringFromUser(int& numberOfStrings, int* sizes, vector<IndexLeng
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<milliseconds>(stop - start);
 
-        cout << "your substring is " << subStringFound << " it took " << duration.count() << " milliseconds " << endl;
+        cout << "your substring is " << subStringFound << endl;
     }
 }
 
@@ -360,7 +389,7 @@ auto processMillionRequest(int& numberOfStrings, int* sizes, vector<IndexLength>
     //measuring time start
     auto start = high_resolution_clock::now();
 
-    while (counter < 1000000) {
+    while (counter < 10000) {
         if (counter % 10000 == 0) {
             cout << counter << endl;
         }
@@ -384,8 +413,8 @@ int main() {
     int i;
     string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
     //file name here
-    //string fileName = "Gen178.fa";
-    string fileName = "embl50.h178.fa";
+    string fileName = "Gen178.fa";
+    //string fileName = "embl50.h178.fa";
     string location = location_main + fileName;
 
     int numberOfStrings = findSize(location);
@@ -427,6 +456,7 @@ int main() {
     IndexLength il = IndexLength(0, relativeSize - 1, 0);
     vIL.push_back(il);
     compressedVectors[0] = vIL;
+    memoryVar += sizeof(compressedVectors[0]);
 
     for (int j = 1; j < numberOfStrings; j++) {
         cout << "compressing " << j << endl;
@@ -436,6 +466,13 @@ int main() {
         memoryVar += sizeof(compressedVectors[j]); //adding space for encoding
         //printCompressed(compressedVector);
     }
+
+    cout << "compressing reference string start!!" << endl;
+
+    vector<Node> refCompressed = compressReference(relativeString);
+    
+    cout << "compressing reference string done!!" << endl;
+    printReferenceString(refCompressed);
 
     delete[] dnaArray;
     cout << "AFTER COMPRESSION!!!" << endl;
@@ -448,9 +485,11 @@ int main() {
     //processSingleCharRequestFromUser(numberOfStrings,sizes,compressedVectors);
     //processSubstringFromUser(numberOfStrings, sizes, compressedVectors);
 
-    auto durationMillion = processMillionRequest(numberOfStrings, sizes, compressedVectors);
+    //auto durationMillion = processMillionRequest(numberOfStrings, sizes, compressedVectors);
 
-    cout << durationMillion.count() << " milliseconds to process million requests ";
+    //cout << durationMillion.count() << " milliseconds to process million requests ";
+    
+    processSingleCharRequestFromUserReferenceString(refCompressed, relativeSize);
 
     delete[] sizes;
     delete[] compressedVectors;
@@ -463,5 +502,6 @@ int main() {
     location = location_main + "LOGS.csv";
     int timeUsed = 0;
     //writeLog(location, fileName, version, ceil(memoryDna/kb), ceil(memoryFingerPrint/kb), ceil(memoryCompressed/kb), ceil(memoryVar/kb), durationMillion.count());
-    writeLog(location, fileName, version, memoryDna, memoryFingerPrint, memoryCompressed, memoryVar, durationMillion.count());
+    //writeLog(location, fileName, version, memoryDna, memoryFingerPrint, memoryCompressed, memoryVar, durationMillion.count());
+
 }

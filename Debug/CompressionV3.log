@@ -1,12 +1,5 @@
-﻿  IndexLength.cpp
-  ReadFile.cpp
-  Source.cpp
-C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(239,28): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(407,23): warning C4834: discarding return value of function with 'nodiscard' attribute
-C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(466,123): warning C4244: 'argument': conversion from '_Rep' to 'int', possible loss of data
-          with
-          [
-              _Rep=__int64
-          ]
-  Generating Code...
+﻿  Source.cpp
+C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(198,23): warning C4018: '<=': signed/unsigned mismatch
+C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(244,28): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Bruger\source\repos\CompressionV3\Source.cpp(412,23): warning C4834: discarding return value of function with 'nodiscard' attribute
   CompressionV3.vcxproj -> C:\Users\Bruger\source\repos\CompressionV3\Debug\CompressionV3.exe

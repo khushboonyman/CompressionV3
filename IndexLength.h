@@ -1,4 +1,4 @@
-#pragma once
+#include <iostream>
 class IndexLength
 {
 private:
@@ -14,14 +14,17 @@ public:
 	IndexLength() {
 		IndexLength(0, 0, 0);
 	}
+	~IndexLength() {
+
+	}
 	int getIndexRelative() {
-		return this->indexRelative;
+		return indexRelative;
 	}
 	int getLength() {
-		return this->length;
+		return length;
 	}
 	int getIndexCString() {
-		return this->indexCString;
+		return indexCString;
 	}
 };
 

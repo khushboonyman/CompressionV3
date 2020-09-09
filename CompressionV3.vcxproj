@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClCompile Include="IndexLength.cpp" />
     <ClCompile Include="ReadFile.cpp" />
+    <ClCompile Include="RefCompression.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IndexLength.h" />
     <ClInclude Include="ReadFile.h" />
+    <ClInclude Include="RefCompression.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

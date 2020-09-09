@@ -24,12 +24,18 @@
     <ClCompile Include="ReadFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RefCompression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IndexLength.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ReadFile.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCompression.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
