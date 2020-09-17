@@ -6,12 +6,12 @@
 #include <math.h>
 #include <chrono>
 using namespace std;
-
+int recursive = 0;
 //change according to new version
 int version = 2;
 string* dnaArray;
-int runLimit = 10;
-//int runLimit = 1000000;
+//int runLimit = 10000;
+int runLimit = 1000000;
 unordered_map<string, vector<int>> fingerPrints;
 unordered_map<char, int> singleChar;
 int limit = 5;
@@ -24,9 +24,10 @@ int mb = 1024 * 1024;
 int kb = 1024;
 string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
 //file name here
-string fileName = "test_ref_only.txt";
+//string fileName = "test_ref_only.txt";
+//THESE TWO FILES SHOULD BE LOGGED
 //string fileName = "Gen178.fa";
-//string fileName = "embl50.h178.fa";
+string fileName = "embl50.h178.fa";
 vector<int>* indexRelative;
 vector<int>* indexCString;
 
@@ -261,7 +262,10 @@ int findLocation(vector<int>& indexCStringElement, int& charIndex) {
     while (true) {
         count++;
         if (count > 1000) {
-            cout << "limit reached" << endl;
+            cout << "first " << first << " mid " << mid << " last " << last << endl;
+        }
+        if (count > 1010) {
+            cout << "limit reached in findLocation" << endl;
             break;
         }
         indexCStringCurrent = indexCStringElement[mid];
@@ -285,23 +289,98 @@ int findLocation(vector<int>& indexCStringElement, int& charIndex) {
             }
         }
 
-        if (indexCStringCurrent > charIndex) {
-            last = mid;
+        if (mid == first) {
+            mid = last;
         }
         else {
-            first = mid;
-        }
+            if (indexCStringCurrent > charIndex) {
+                last = mid;
+            }
+            else {
+                first = mid;
+            }
 
-        mid = (first + last) / 2;
+            mid = (first + last) / 2;
+        }
     }
     return mid;
+}
+
+//FIND CHARACTER FROM COMPRESSED REFERENCE STRING
+char findCharIndexRefString(int& index) {
+    recursive++;
+    if (recursive > 100) {
+        cout << "something went wrong in recursion " << endl;
+        return '@';
+    }
+
+    int first = 0;
+    int last = (index <= extra.size() ? index : extra.size() - 1);
+    int mid = last / 2;
+    int count = 0;
+    while (true) {
+        if (originalIndex->at(mid) == index) {
+            if (originalIndex->at(mid) == pointerIndex->at(mid)) {
+                return extra[mid];
+            }
+            else {
+                return findCharIndexRefString(pointerIndex->at(mid));
+            }
+        }
+
+        if (mid == first) {
+            if (originalIndex->at(last) == pointerIndex->at(last) && pointerIndex->at(last) == index) {
+                return extra[last];
+            }
+        }
+        if (mid != extra.size() - 1) {
+            int next = mid + 1;
+            if (originalIndex->at(mid) < index && originalIndex->at(next) > index) {
+                if (originalIndex->at(next) == index + 1)
+                    return extra[mid];
+                else {
+                    int callIndex = pointerIndex->at(mid) + index - originalIndex->at(mid);
+                    return findCharIndexRefString(callIndex);
+                }
+            }
+            else {
+                if (mid == first) {
+                    mid = last;
+                }
+                else {
+                    if (originalIndex->at(mid) > index)
+                        last = mid;
+                    else
+                        first = mid;
+                    mid = (first + last) / 2;
+                }
+            }
+        }
+        else {
+            if (index == extra.size() - 1)
+                return extra[mid];
+            else {
+                int callIndex = pointerIndex->at(mid) + index - originalIndex->at(mid);
+                return findCharIndexRefString(callIndex);
+            }
+        }
+        count++;
+        if (count > 50) {
+            cout << "something went wrong again " << endl;
+            break;
+        }
+    }
+    return '$';
 }
 
 //FIND WHICH CHARACTER IS PRESENT ON THE STRING INDEX
 char findCharacter(vector<int>& indexRelativeElement, vector<int>& indexCStringElement, int& charIndex) {
     int indexFound = findLocation(indexCStringElement, charIndex);
     int distance = charIndex - indexCStringElement[indexFound];
-    return relativeString[indexRelativeElement[indexFound] + distance];
+    int finalIndex = indexRelativeElement[indexFound] + distance;
+    recursive = 0;
+    return findCharIndexRefString(finalIndex);
+    //return relativeString[indexRelativeElement[indexFound] + distance];
 }
 
 //FIND SUBSTRING FROM THE SEARCHED STRING, INPUT IS START INDEX AND LENGTH OF SUBSTRING
@@ -478,7 +557,7 @@ void updateVector(int& i, char& additional, int& prevIndex, string& currentStrin
     else {
         pointerIndex->push_back(prevIndex);
     }
-    memory += 8;
+    memory += 9;
     subStrings[currentString] = i;
 }
 
@@ -520,6 +599,37 @@ void printReferenceString() {
     while (i < originalIndex->size()) {
         cout << originalIndex->at(i) << " " << pointerIndex->at(i) << " " << extra[i] << endl;
         i++;
+    }
+}
+
+//PROCESS REQUEST FROM THE USER, WHERE INPUT IS WHICH STRING NUMBER (FROM 0) + INDEX WITHIN THE STRING
+void processCharRequestFromUserRefString() {
+    char response;
+    int charIndex;
+
+    while (true) {
+        cout << " do you want to retrieve a character ? Y/N " << endl;
+        cin >> response;
+        if (toupper(response) != 'Y')
+            break;
+        cout << "enter index within the string " << endl;
+        cin >> charIndex;
+        if (charIndex < 0 || charIndex >= relativeSize) {
+            cout << "the string is not that long " << endl;
+            continue;
+        }
+
+        //measuring time start
+        auto start = chrono::high_resolution_clock::now();
+        recursive = 0;
+        //this function finds the character from the compressed datastructure
+        char charFound = findCharIndexRefString(charIndex);
+
+        //measuring time end
+        auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
+
+        cout << "your character is " << charFound << " it took " << duration.count() << " milliseconds " << endl;
     }
 }
 
@@ -587,15 +697,15 @@ int main() {
     cout << "AFTER COMPRESSION!!!" << endl;
 
     compressReference();
-    printReferenceString();
-
+    //printReferenceString();
+    //processCharRequestFromUserRefString();
     //auto stop = chrono::high_resolution_clock::now();
     //auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
     //cout << "it took " << duration.count() << " seconds to compress " << numberOfStrings <<  endl;
 
     //processSingleCharRequestFromUser(numberOfStrings,sizes);
     //processSubstringFromUser(numberOfStrings, sizes);
-    //auto durationMillion = processMillionRequest(numberOfStrings, sizes);
+    auto durationMillion = processMillionRequest(numberOfStrings, sizes);
     //cout << durationMillion.count() <<" milliseconds to process million requests ";
     delete[] dnaArray;
     delete[] sizes;
@@ -608,5 +718,5 @@ int main() {
     //string headers = "FILE_NAME;VERSION;MEMORY;TIME";
     location = location_main + "LOGS.csv";
     int timeUsed = 0;
-    //writeLog(location, fileName, version, memoryVar, (int)durationMillion.count());
+    writeLog(location, fileName, version, memoryVar, (int)durationMillion.count());
 }
