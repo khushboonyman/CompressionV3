@@ -5,35 +5,40 @@
 #include <set>
 #include <math.h>
 #include <chrono>
+
 using namespace std;
-int recursive = 0;
-//change according to new version
-int version = 2;
-string* dnaArray;
-//int runLimit = 10000;
+//GLOBAL VARIABLES THAT NEED TO BE CHANGED ACCORDINGLY
+int version = 3;
+int limit = 5;
+int recursiveLimit = 1000;
+//int runLimit = 100;
 int runLimit = 1000000;
+string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
+//file name here
+//string fileName = "test_ref_only.txt";
+//THESE TWO FILES SHOULD BE LOGGED
+string fileName = "Gen178.fa";
+//string fileName = "embl50.h178.fa";
+//change according to new version
+
+string* dnaArray;
 unordered_map<string, vector<int>> fingerPrints;
 unordered_map<char, int> singleChar;
-int limit = 5;
+int memory = 0;
 string relativeString;
 int relativeSize;
 int countSingleChar = 0;
 int memoryVar = 0;
 int memoryOld = 0;
+
 int mb = 1024 * 1024;
 int kb = 1024;
-string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
-//file name here
-//string fileName = "test_ref_only.txt";
-//THESE TWO FILES SHOULD BE LOGGED
-//string fileName = "Gen178.fa";
-string fileName = "embl50.h178.fa";
+
 vector<int>* indexRelative;
 vector<int>* indexCString;
-
 vector<int>* originalIndex = new vector<int>;
 vector<int>* pointerIndex = new vector<int>;
-
+int recursive = 0;
 string extra = "";
 
 //FIND HOW MANY STRINGS ARE THERE
@@ -261,7 +266,7 @@ int findLocation(vector<int>& indexCStringElement, int& charIndex) {
     int indexCStringCurrent, indexCStringNext, indexCStringNextNext;
     while (true) {
         count++;
-        if (count > 1000) {
+        if (count > recursiveLimit) {
             cout << "first " << first << " mid " << mid << " last " << last << endl;
         }
         if (count > 1010) {
@@ -309,7 +314,7 @@ int findLocation(vector<int>& indexCStringElement, int& charIndex) {
 //FIND CHARACTER FROM COMPRESSED REFERENCE STRING
 char findCharIndexRefString(int& index) {
     recursive++;
-    if (recursive > 100) {
+    if (recursive > recursiveLimit) {
         cout << "something went wrong in recursion " << endl;
         return '@';
     }
@@ -565,7 +570,7 @@ void updateVector(int& i, char& additional, int& prevIndex, string& currentStrin
 void compressReference() {
     unordered_map<string, int> subStrings;
     string currentString = "";
-    int memory = sizeof(originalIndex) + sizeof(pointerIndex) + sizeof(extra) ;
+    memory = sizeof(originalIndex) + sizeof(pointerIndex) + sizeof(extra) ;
     cout << "initial memory when compressing reference string " << memory << endl;
 
     int currentIndex = -1, prevIndex = -1, i;
@@ -711,6 +716,8 @@ int main() {
     delete[] sizes;
     delete[] indexRelative;
     delete[] indexCString;
+    delete originalIndex;
+    delete pointerIndex;
 
     cout << "PROGRAM ENDING!!! " << endl;
 
@@ -718,5 +725,5 @@ int main() {
     //string headers = "FILE_NAME;VERSION;MEMORY;TIME";
     location = location_main + "LOGS.csv";
     int timeUsed = 0;
-    writeLog(location, fileName, version, memoryVar, (int)durationMillion.count());
+    writeLog(location, fileName, version, memoryVar+memory, (int)durationMillion.count());
 }
