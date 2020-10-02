@@ -16,10 +16,11 @@ int recursiveLimit = 1000;
 int runLimit = 1000000;
 string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
 //file name here
+//string fileName = "my_complete_genome.txt";
 //string fileName = "test_ref_only.txt";
-string fileName = "genome.fa";
+//string fileName = "genome.fa";
 //THESE TWO FILES SHOULD BE LOGGED
-//string fileName = "Gen178.fa";
+string fileName = "Gen178.fa";
 //string fileName = "embl50.h178.fa";
 //change according to new version
 
@@ -663,7 +664,6 @@ int main() {
     cout << "DNA ARRAY !!!" << endl;
 
     relativeString = dnaArray[0];
-    memoryVar += sizeof(relativeString);  //adding space for reference string
 
     relativeSize = relativeString.size();
 
@@ -698,8 +698,6 @@ int main() {
         //memoryVar += ((4 * indexRelative[i].size()) + (4 * indexCString[i].size())); //adding space for encoding
     }
 
-    memoryVar += relativeSize; //finally adding length of relative string as it was expanded
-
     //delete[] dnaArray;
     cout << "AFTER COMPRESSION!!!" << endl;
 
@@ -721,11 +719,12 @@ int main() {
     delete originalIndex;
     delete pointerIndex;
 
+    memoryVar += memory;
     cout << "PROGRAM ENDING!!! " << endl;
 
     cout << "old memory : " << memoryOld << " compressed memory : " << memoryVar << endl;
     //string headers = "FILE_NAME;VERSION;MEMORY;TIME";
     location = location_main + "LOGS.csv";
     int timeUsed = 0;
-    writeLog(location, fileName, version, memoryVar+memory, (int)durationMillion.count());
+    writeLog(location, fileName, version, memoryVar, (int)durationMillion.count());
 }
