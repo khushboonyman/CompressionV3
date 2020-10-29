@@ -10,19 +10,19 @@
 using namespace std;
 //GLOBAL VARIABLES THAT NEED TO BE CHANGED ACCORDINGLY
 int version = 3;
-int limit = 5;
+int limit = 10;
 int recursiveLimit = 1000;
 //int runLimit = 100;
-int runLimit = 1000000;
+int runLimit = 100000;
 string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\datasets\\";
 //file name here
-//string fileName = "my_complete_genome.txt";
 //string fileName = "test_ref_only.txt";
 //string fileName = "genome.fa";
-//THESE TWO FILES SHOULD BE LOGGED
-string fileName = "Gen178.fa";
+//string fileName = "Gen178.fa";
 //string fileName = "embl50.h178.fa";
-//change according to new version
+//FILES TO BE LOGGED
+//string fileName = "genome_selfmade.txt";
+string fileName = "my_complete_genome.txt";
 
 string* dnaArray;
 unordered_map<string, vector<int>> fingerPrints;
@@ -516,14 +516,14 @@ void processSubstringFromUser(int& numberOfStrings, int* sizes) {
 
 //PROCESS ONE MILLION REQUESTS OF FINDING A CHARACTER ON A RANDOM INDEX FROM A RANDOM STRING
 auto processMillionRequest(int& numberOfStrings, int* sizes) {
-    cout << " processing million requests " << endl;
+    cout << " processing " << runLimit << " requests " << endl;
     int counter = 0;
     int stringIndex, charIndex;
     //measuring time start
     auto start = chrono::high_resolution_clock::now();
 
     while (counter < runLimit) {
-        if (counter % 10000 == 0) {
+        if (counter % 1000 == 0) {
             cout << counter << endl;
         }
         stringIndex = rand() % (numberOfStrings - 1);
@@ -533,10 +533,10 @@ auto processMillionRequest(int& numberOfStrings, int* sizes) {
         vector<int> indexCStringElement = indexCString[stringIndex];
         //this function finds the character from the compressed datastructure
         char charFound = findCharacter(indexRelativeElement, indexCStringElement, charIndex);
-        if (charFound != dnaArray[stringIndex][charIndex]) {
+        /*if (charFound != dnaArray[stringIndex][charIndex]) {
             cout << "some issue fetching character " << stringIndex << " " << charIndex << endl;
             break;
-        }
+        }*/
         //cout << "character found at string " << stringIndex << " at index " << charIndex << " is " << charFound << " actual " << dnaArray[stringIndex][charIndex]<<endl;
         counter++;
     }
@@ -642,7 +642,7 @@ void processCharRequestFromUserRefString() {
 }
 
 int main() {
-    cout << "PROGRAM STARTING!!!" << endl;
+    cout << "PROGRAM STARTING!!! with file " <<fileName <<" limit of fingerprint size "<< limit << endl;
 
     int i;
     string location = location_main + fileName;
@@ -692,13 +692,14 @@ int main() {
         cout << "compressing " << i << endl;
         string toCompress = dnaArray[i];
         compress(toCompress, indexRelative[i], indexCString[i]);
+        dnaArray[i] = "";
         //printCompressed(indexRelative[i], indexCString[i]);
         memoryVar += (8 * indexRelative[i].size()); //adding space for encoding
         //cout << "size of string " << dnaArray[i].size() << " size of compressed structure " << 8*indexRelative[i].size() << endl;
         //memoryVar += ((4 * indexRelative[i].size()) + (4 * indexCString[i].size())); //adding space for encoding
     }
 
-    //delete[] dnaArray;
+    delete[] dnaArray;
     cout << "AFTER COMPRESSION!!!" << endl;
 
     compressReference();
@@ -712,7 +713,7 @@ int main() {
     //processSubstringFromUser(numberOfStrings, sizes);
     auto durationMillion = processMillionRequest(numberOfStrings, sizes);
     //cout << durationMillion.count() <<" milliseconds to process million requests ";
-    delete[] dnaArray;
+    //delete[] dnaArray;
     delete[] sizes;
     delete[] indexRelative;
     delete[] indexCString;
@@ -722,7 +723,7 @@ int main() {
     memoryVar += memory;
     cout << "PROGRAM ENDING!!! " << endl;
 
-    cout << "old memory : " << memoryOld << " compressed memory : " << memoryVar << endl;
+    cout << "old memory : " << memoryOld << " compressed memory : " << memoryVar << " compression " << ((float)memoryVar/(float)memoryOld)*100 <<endl;
     //string headers = "FILE_NAME;VERSION;MEMORY;TIME";
     location = location_main + "LOGS.csv";
     int timeUsed = 0;
