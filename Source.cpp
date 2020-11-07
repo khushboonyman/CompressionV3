@@ -19,10 +19,10 @@ string location_main = "C:\\Users\\Bruger\\Desktop\\books\\THESIS start aug 3\\d
 //string fileName = "test_ref_only.txt";
 //string fileName = "genome.fa";
 //string fileName = "Gen178.fa";
-//string fileName = "embl50.h178.fa";
+string fileName = "embl50.h178.fa";
 //FILES TO BE LOGGED
 //string fileName = "genome_selfmade.txt";
-string fileName = "my_complete_genome.txt";
+//string fileName = "my_complete_genome.txt";
 
 string* dnaArray;
 unordered_map<string, vector<int>> fingerPrints;
@@ -152,7 +152,9 @@ int findSingleChar(char& checkChar) {
 void setFingerPrintSingleChar() {
     int i;
     for (i = 0; i <= relativeSize - limit; i++) {
-        string fingerPrint = relativeString.substr(i, limit);
+        string fingerPrint;
+        fingerPrint.reserve(limit);
+        fingerPrint.append(relativeString, i, limit);
         char single = relativeString[i];
         unordered_map<string, vector<int>>::const_iterator it = fingerPrints.find(fingerPrint);
         unordered_map<char, int>::const_iterator itC = singleChar.find(single);
@@ -195,7 +197,8 @@ void compress(string& toCompress, vector<int>& indexRelativeElement, vector<int>
     while (start <= end - limit) {
         vector<int> indices;
         string checkFingerPrint;
-        checkFingerPrint = toCompress.substr(start, limit);
+        checkFingerPrint.reserve(limit);
+        checkFingerPrint.append(toCompress, start, limit);
         indices = findFingerPrint(checkFingerPrint);
         //limit size substring fingerprint not found
         if (indices.size() == 0) {
@@ -533,6 +536,7 @@ auto processMillionRequest(int& numberOfStrings, int* sizes) {
         vector<int> indexCStringElement = indexCString[stringIndex];
         //this function finds the character from the compressed datastructure
         char charFound = findCharacter(indexRelativeElement, indexCStringElement, charIndex);
+        /* TEST */
         /*if (charFound != dnaArray[stringIndex][charIndex]) {
             cout << "some issue fetching character " << stringIndex << " " << charIndex << endl;
             break;
@@ -692,7 +696,6 @@ int main() {
         cout << "compressing " << i << endl;
         string toCompress = dnaArray[i];
         compress(toCompress, indexRelative[i], indexCString[i]);
-        dnaArray[i] = "";
         //printCompressed(indexRelative[i], indexCString[i]);
         memoryVar += (8 * indexRelative[i].size()); //adding space for encoding
         //cout << "size of string " << dnaArray[i].size() << " size of compressed structure " << 8*indexRelative[i].size() << endl;
